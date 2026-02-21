@@ -13,7 +13,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { useClerk } from "@clerk/clerk-react";
+import { useClerk, useSignIn } from "@clerk/clerk-react";
 
 import Logo from "./Logo";
 import SearchBar from "./SearchBar";
@@ -46,7 +46,10 @@ export default function Navbar({}) {
       <SearchBar id="search-bar" />
       <span id="user-section">
         <SignedOut>
-          <LoginBtn id="login-btn" />
+          <div style={{ display: "flex", gap: "10px" }}>
+            <DemoLoginBtn />
+            <LoginBtn id="login-btn" />
+          </div>
         </SignedOut>
         <SignedIn>
           <Button
@@ -75,6 +78,7 @@ export default function Navbar({}) {
               onClick={(e) => {
                 e.preventDefault();
                 router.push("/club-request");
+                handleClose();
               }}
             >
               Create Club
@@ -82,6 +86,7 @@ export default function Navbar({}) {
             <MenuItem
               onClick={() => {
                 router.push("/admin");
+                handleClose();
               }}
             >
               Approval List
@@ -129,6 +134,38 @@ function LoginBtn({ ...props }) {
   return (
     <BlueBtn type="button" onClick={() => clerk.openSignIn({})} {...props}>
       <LoginIcon /> Login
+    </BlueBtn>
+  );
+}
+
+function DemoLoginBtn({ ...props }) {
+  const { isLoaded, signIn, setActive } = useSignIn();
+
+  const handleDemoLogin = async () => {
+    if (!isLoaded) return;
+    
+    try {
+      const result = await signIn.create({
+        identifier: "admin@demo.com",
+        password: "admin12demo",
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+      }
+    } catch (err) {
+      alert("Admin Login Failed");
+    }
+  };
+
+  return (
+    <BlueBtn 
+      type="button" 
+      onClick={handleDemoLogin} 
+      style={{ backgroundColor: "#10b981", maxWidth: "none" }} 
+      {...props}
+    >
+      <LoginIcon /> Admin
     </BlueBtn>
   );
 }
